@@ -22,8 +22,6 @@ public class ws_manager : MonoBehaviour
     public GameObject player;
     public GameObject enemy;
     public GameObject bullet;
-    public float cooldownTime = 50;
-    private float cooldown;
     private bool joined;
     Weapon mygun;
     Guid id;
@@ -56,7 +54,6 @@ public class ws_manager : MonoBehaviour
                 JArray players = (JArray)message["data"]["players"];
                 if(message["id"].ToString().Equals(id.ToString())){
                     Debug.Log("you joined!");
-                    Debug.Log(players.Count());
                     playerQueue.Enqueue(new Vector3(x, y, z));
                     for(int i = 0; i < players.Count(); i++)
                     {
@@ -133,16 +130,12 @@ public class ws_manager : MonoBehaviour
         };
         // InvokeRepeating("SendWebSocketMessage", 0.0f, Time.deltaTime);
         await ws.Connect();
-        cooldown = 0;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(cooldown > 0)
-        {
-            cooldown--;
-        }
+        
         // 参加する
         if(playerQueue.Count > 0)
         {
@@ -151,6 +144,7 @@ public class ws_manager : MonoBehaviour
             player = joinedPlayers[id.ToString()];
             joined = true;
             mygun = player.GetComponent<ball>().weapon.GetComponent<Weapon>();
+            mygun.init();
         }
         if(enemyQueue.Count > 0)
         {
@@ -173,11 +167,11 @@ public class ws_manager : MonoBehaviour
                 {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
             };
             ws.SendText(JsonConvert.SerializeObject(message));
+            mygun.MainUpdate();
         }
         // 自分が弾を撃つ
-        if(Input.GetMouseButton(0) && cooldown == 0)
+        if(Input.GetMouseButton(0) && mygun.CanShot())
         {
-            cooldown = cooldownTime;
             Vector3 pos = player.transform.position + player.transform.forward * 3.0f;
             Dictionary<String, String> message = new Dictionary<string, string>()
             {
@@ -192,16 +186,19 @@ public class ws_manager : MonoBehaviour
             ws.SendText(JsonConvert.SerializeObject(message));
         }
         // 自分が死んだ
-        if(joinedPlayers[id.ToString()].GetComponent<ball>().dead){
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            SceneManager.LoadSceneAsync("Gameover");
-            Dictionary<String, String> message = new Dictionary<string, string>()
-            {
-                {"method", "dead"}, 
-                {"id", id.ToString()},
-            };
-            ws.SendText(JsonConvert.SerializeObject(message));
+        if(joined)
+        {
+            if(joinedPlayers[id.ToString()].GetComponent<ball>().dead){
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                SceneManager.LoadSceneAsync("Gameover");
+                Dictionary<String, String> message = new Dictionary<string, string>()
+                {
+                    {"method", "dead"}, 
+                    {"id", id.ToString()},
+                };
+                ws.SendText(JsonConvert.SerializeObject(message));
+            }
         }
     }
 
@@ -215,6 +212,7 @@ public class ws_manager : MonoBehaviour
     // }
 
      void OnDestroy() {
+        joined = false;
         Dictionary<String, String> message = new Dictionary<string, string>()
             {
                 {"method", "leave"}, 
