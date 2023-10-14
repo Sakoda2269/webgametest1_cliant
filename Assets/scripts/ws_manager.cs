@@ -24,12 +24,15 @@ public class ws_manager : MonoBehaviour
     public GameObject bullet;
     public float cooldownTime = 50;
     private float cooldown;
+    private bool joined;
+    Weapon mygun;
     Guid id;
     // Start is called before the first frame update
     async void Start()
     {
         string addres = join.serverAddres;
         ws = new WebSocket("ws://" + addres + "/ws/chat/room1/");
+        joined = false;
         // サーバーに接続
         ws.OnOpen += () =>
         {
@@ -66,6 +69,7 @@ public class ws_manager : MonoBehaviour
                         Debug.Log(players[i].ToString() + "was alredy joined!");
                         enemyId.Enqueue(players[i].ToString());
                     }
+                    
                 }
                 else{
                     Debug.Log("a new player joined!");
@@ -139,10 +143,14 @@ public class ws_manager : MonoBehaviour
         {
             cooldown--;
         }
+        // 参加する
         if(playerQueue.Count > 0)
         {
             GameObject tmp = Instantiate(player, playerQueue.Dequeue(), Quaternion.identity);
             joinedPlayers.Add(id.ToString(), tmp);
+            player = joinedPlayers[id.ToString()];
+            joined = true;
+            mygun = player.GetComponent<ball>().weapon.GetComponent<Weapon>();
         }
         if(enemyQueue.Count > 0)
         {
@@ -153,28 +161,24 @@ public class ws_manager : MonoBehaviour
             ws.DispatchMessageQueue();
         #endif
         // 自分の位置更新
-        try
+        if(joined)
         {
-            GameObject mine = joinedPlayers[id.ToString()];
             Dictionary<String, String> message = new Dictionary<string, string>()
             {
                 {"method", "updata"}, 
                 {"id", id.ToString()},
-                {"pos_x" , mine.transform.position.x.ToString()},
-                {"pos_y" , mine.transform.position.y.ToString()},
-                {"pos_z" , mine.transform.position.z.ToString()},
-                {"rotate_y" , mine.transform.localEulerAngles.y.ToString()},
+                {"pos_x" , player.transform.position.x.ToString()},
+                {"pos_y" , player.transform.position.y.ToString()},
+                {"pos_z" , player.transform.position.z.ToString()},
+                {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
             };
             ws.SendText(JsonConvert.SerializeObject(message));
-        } catch(KeyNotFoundException e){
-            Debug.Log(e);
         }
         // 自分が弾を撃つ
         if(Input.GetMouseButton(0) && cooldown == 0)
         {
             cooldown = cooldownTime;
-            GameObject mine = joinedPlayers[id.ToString()];
-            Vector3 pos = mine.transform.position + mine.transform.forward * 3.0f;
+            Vector3 pos = player.transform.position + player.transform.forward * 3.0f;
             Dictionary<String, String> message = new Dictionary<string, string>()
             {
                 {"method", "shot"}, 
@@ -182,8 +186,8 @@ public class ws_manager : MonoBehaviour
                 {"pos_x" , pos.x.ToString()},
                 {"pos_y" , pos.y.ToString()},
                 {"pos_z" , pos.z.ToString()},
-                {"rotate_y" , mine.transform.localEulerAngles.y.ToString()},
-                {"gun_name", mine.GetComponent<ball>().weapon.GetComponent<Weapon>().gunName}
+                {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
+                {"gun_name", mygun.gunName}
             };
             ws.SendText(JsonConvert.SerializeObject(message));
         }

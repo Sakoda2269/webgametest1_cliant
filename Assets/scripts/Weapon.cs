@@ -4,11 +4,16 @@ using UnityEngine;
 
 public abstract class Weapon : MonoBehaviour
 {
-
-    public int cooldown = 20;
+    public int maxCooldown;
+    public int cooldown = 0;
     public int damage = 1;
     public GameObject bullet;
     public string gunName;
+    public int maxMagazine;
+    public int magazine;
+    public int maxRelodeTime;
+    public int reloadTime;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -20,6 +25,15 @@ public abstract class Weapon : MonoBehaviour
     {
         
     }
+    void FixedUpdate(){
+        if(cooldown > 0){
+            cooldown--;
+        }
+    }
     public abstract void Shot(Vector3 pos, float rotate_y);
+
+    public bool CanShot(){
+        return cooldown <= 0;
+    }
         
 }

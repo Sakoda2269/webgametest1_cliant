@@ -7,7 +7,7 @@ public class bullet : MonoBehaviour
 {
     private Vector3 forward;
     private Rigidbody rb;
-    public float speed = 10.0f;
+    public float speed = 30.0f;
     public GameObject shoter;
 
     // Start is called before the first frame update
