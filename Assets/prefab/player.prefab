@@ -311,4 +311,4 @@ MonoBehaviour:
   dead: 0
   maxHealth: 100
   health: 100
-  weapon: {fileID: 4368947517256636827, guid: 544381dc19534a043a5446aad8bda6ae, type: 3}
+  weapon: {fileID: 4118833772508968513, guid: 01f3a06b9d46bc84e9847aea37798911, type: 3}
