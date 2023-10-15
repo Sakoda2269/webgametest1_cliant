@@ -10,6 +10,8 @@ public abstract class Bullet : MonoBehaviour
     public float speed = 30.0f;
     public GameObject shoter;
     public int damage = 5;
+    protected int deadTime = 0;
+    protected int maxDeadTime = 500;
 
     // Start is called before the first frame update
     void Start()
@@ -23,6 +25,11 @@ public abstract class Bullet : MonoBehaviour
     void Update()
     {
         rb.velocity = forward * speed;
+        deadTime++;
+        if(deadTime > maxDeadTime)
+        {
+            Destroy(this.gameObject);
+        }
     }
 
     protected abstract void init();

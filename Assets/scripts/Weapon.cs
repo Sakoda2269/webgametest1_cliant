@@ -14,10 +14,11 @@ public abstract class Weapon : MonoBehaviour
     public int maxRelodeTime;
     public int reloadTime;
     public bool reloading;
+    protected float recoil;
+    public bool ADS = false;
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
@@ -38,14 +39,20 @@ public abstract class Weapon : MonoBehaviour
             magazine = maxMagazine;
         }
     }
-    public void Shot(Vector3 pos, float rotate_y){
+    public float Shot(float rotate_y){
         if(CanShot())
         {
-            GunShotType(pos, rotate_y);
+            cooldown = maxCooldown;
+            magazine--;
+            if(ADS)
+            {
+                 return Random.Range(-0.2f, 0.2f) + rotate_y;
+            }
+            return Random.Range(-recoil, recoil) + rotate_y;
         }
+        return 0;
     }
-    public abstract void enemyShot(Vector3 pos, float rotate_y);
-    public abstract void GunShotType(Vector3 pos, float rotate_y);
+    public abstract void enemyShot(Vector3 pos, float rotate_y, GameObject shoter);
 
     public bool CanShot(){
         if(magazine <= 0 && !reloading)

@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 public class Player : MonoBehaviour
 {
 
-    public float _speed = 1f;
+    public float _speed = 10f;
     public float sensitiveRotate = 3.0f;
     public bool dead;
     public int maxHealth = 100;

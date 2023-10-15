@@ -116,13 +116,7 @@ public class ws_manager : MonoBehaviour
                 string gun_name = message["data"]["gun_name"].ToString();
                 GameObject gun = (GameObject)Resources.Load("weapons/" + gun_name);
                 float rotate_y = float.Parse(message["data"]["rotate_y"].ToString());
-                if(shoter_id.Equals(id.ToString())){
-                    mygun.Shot(pos, rotate_y);
-                }
-                else
-                {
-                    gun.GetComponent<Weapon>().enemyShot(pos, rotate_y);
-                }
+                gun.GetComponent<Weapon>().enemyShot(pos, rotate_y, joinedPlayers[shoter_id]);
                 
 
             }
@@ -184,7 +178,6 @@ public class ws_manager : MonoBehaviour
 
             mygun.MainUpdate();
             healthBar.value = (float)player.GetComponent<Player>().health / player.GetComponent<Player>().maxHealth;
-            Debug.Log(0.2f * mygun.magazine/mygun.maxMagazine);
             if(mygun.reloading)
             {
                 magazineBar.value = (float)(mygun.maxRelodeTime-mygun.reloadTime)/mygun.maxRelodeTime;
@@ -201,6 +194,8 @@ public class ws_manager : MonoBehaviour
             if(Input.GetMouseButton(0) && mygun.CanShot())
             {
                 Vector3 pos = player.transform.position + player.transform.forward * 3.0f;
+                float rotate_y = mygun.Shot(player.transform.localEulerAngles.y);
+                player.transform.localEulerAngles = new Vector3(0, rotate_y, 0);
                 Dictionary<String, String> shotMessage = new Dictionary<string, string>()
                 {
                     {"method", "shot"}, 
@@ -208,10 +203,21 @@ public class ws_manager : MonoBehaviour
                     {"pos_x" , pos.x.ToString()},
                     {"pos_y" , pos.y.ToString()},
                     {"pos_z" , pos.z.ToString()},
-                    {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
+                    {"rotate_y" , rotate_y.ToString()},
                     {"gun_name", mygun.gunName}
                 };
                 ws.SendText(JsonConvert.SerializeObject(shotMessage));
+            }
+            if(Input.GetMouseButtonDown(1))
+            {
+                player.transform.GetChild(0).gameObject.transform.localPosition = new Vector3(0, 0.44f, 1.57f);
+                mygun.ADS = true;
+                player.GetComponent<Player>()._speed = 2f;
+            }
+            if(Input.GetMouseButtonUp(1)){
+                player.transform.GetChild(0).gameObject.transform.localPosition = new Vector3(0, 1, -2.4f);
+                mygun.ADS = false;
+                player.GetComponent<Player>()._speed = 10f;
             }
             // 自分が死んだ
             if(joinedPlayers[id.ToString()].GetComponent<Player>().dead){
