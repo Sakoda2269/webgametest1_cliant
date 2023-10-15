@@ -22,9 +22,12 @@ public class ws_manager : MonoBehaviour
     public GameObject player;
     public GameObject enemy;
     public GameObject bullet;
+    public Slider healthBar;
+    public Slider magazineBar;
     private bool joined;
     Weapon mygun;
     Guid id;
+
     // Start is called before the first frame update
     async void Start()
     {
@@ -81,13 +84,16 @@ public class ws_manager : MonoBehaviour
                 if(!message["id"].ToString().Equals(id.ToString()))
                 {
                     string eid = message["id"].ToString();
-                    JArray pos_rot = (JArray)message["data"];
-                    float tmpx = float.Parse(pos_rot[0].ToString());
-                    float tmpy = float.Parse(pos_rot[1].ToString());
-                    float tmpz = float.Parse(pos_rot[2].ToString());
-                    float rotatey = float.Parse(pos_rot[4].ToString());
-                    joinedPlayers[eid].transform.position = new Vector3(tmpx, tmpy, tmpz);
-                    joinedPlayers[eid].transform.localEulerAngles = new Vector3(0, rotatey, 0);
+                    if(joinedPlayers.ContainsKey(eid))
+                    {
+                        JArray pos_rot = (JArray)message["data"];
+                        float tmpx = float.Parse(pos_rot[0].ToString());
+                        float tmpy = float.Parse(pos_rot[1].ToString());
+                        float tmpz = float.Parse(pos_rot[2].ToString());
+                        float rotatey = float.Parse(pos_rot[4].ToString());
+                        joinedPlayers[eid].transform.position = new Vector3(tmpx, tmpy, tmpz);
+                        joinedPlayers[eid].transform.localEulerAngles = new Vector3(0, rotatey, 0);
+                    }
                 }
             }
             // 誰かがゲームから抜けた
@@ -110,7 +116,14 @@ public class ws_manager : MonoBehaviour
                 string gun_name = message["data"]["gun_name"].ToString();
                 GameObject gun = (GameObject)Resources.Load("weapons/" + gun_name);
                 float rotate_y = float.Parse(message["data"]["rotate_y"].ToString());
-                gun.GetComponent<Weapon>().Shot(pos, rotate_y);
+                if(shoter_id.Equals(id.ToString())){
+                    mygun.Shot(pos, rotate_y);
+                }
+                else
+                {
+                    gun.GetComponent<Weapon>().enemyShot(pos, rotate_y);
+                }
+                
 
             }
             // 誰かが死んだ
@@ -143,7 +156,7 @@ public class ws_manager : MonoBehaviour
             joinedPlayers.Add(id.ToString(), tmp);
             player = joinedPlayers[id.ToString()];
             joined = true;
-            mygun = player.GetComponent<ball>().weapon.GetComponent<Weapon>();
+            mygun = player.GetComponent<Player>().weapon.GetComponent<Weapon>();
             mygun.init();
         }
         if(enemyQueue.Count > 0)
@@ -154,10 +167,11 @@ public class ws_manager : MonoBehaviour
         #if !UNITY_WEBGL || UNITY_EDITOR
             ws.DispatchMessageQueue();
         #endif
-        // 自分の位置更新
+        
         if(joined)
         {
-            Dictionary<String, String> message = new Dictionary<string, string>()
+            // 自分の位置更新
+            Dictionary<String, String> updataMessage = new Dictionary<string, string>()
             {
                 {"method", "updata"}, 
                 {"id", id.ToString()},
@@ -166,38 +180,50 @@ public class ws_manager : MonoBehaviour
                 {"pos_z" , player.transform.position.z.ToString()},
                 {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
             };
-            ws.SendText(JsonConvert.SerializeObject(message));
+            ws.SendText(JsonConvert.SerializeObject(updataMessage));
+
             mygun.MainUpdate();
-        }
-        // 自分が弾を撃つ
-        if(Input.GetMouseButton(0) && mygun.CanShot())
-        {
-            Vector3 pos = player.transform.position + player.transform.forward * 3.0f;
-            Dictionary<String, String> message = new Dictionary<string, string>()
+            healthBar.value = (float)player.GetComponent<Player>().health / player.GetComponent<Player>().maxHealth;
+            Debug.Log(0.2f * mygun.magazine/mygun.maxMagazine);
+            if(mygun.reloading)
             {
-                {"method", "shot"}, 
-                {"id", id.ToString()},
-                {"pos_x" , pos.x.ToString()},
-                {"pos_y" , pos.y.ToString()},
-                {"pos_z" , pos.z.ToString()},
-                {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
-                {"gun_name", mygun.gunName}
-            };
-            ws.SendText(JsonConvert.SerializeObject(message));
-        }
-        // 自分が死んだ
-        if(joined)
-        {
-            if(joinedPlayers[id.ToString()].GetComponent<ball>().dead){
+                magazineBar.value = (float)(mygun.maxRelodeTime-mygun.reloadTime)/mygun.maxRelodeTime;
+
+            }
+            else
+            {
+                magazineBar.value =(float)mygun.magazine/mygun.maxMagazine;
+            }
+            
+            //player.GetComponent<Player>().health;
+        
+            // 自分が弾を撃つ
+            if(Input.GetMouseButton(0) && mygun.CanShot())
+            {
+                Vector3 pos = player.transform.position + player.transform.forward * 3.0f;
+                Dictionary<String, String> shotMessage = new Dictionary<string, string>()
+                {
+                    {"method", "shot"}, 
+                    {"id", id.ToString()},
+                    {"pos_x" , pos.x.ToString()},
+                    {"pos_y" , pos.y.ToString()},
+                    {"pos_z" , pos.z.ToString()},
+                    {"rotate_y" , player.transform.localEulerAngles.y.ToString()},
+                    {"gun_name", mygun.gunName}
+                };
+                ws.SendText(JsonConvert.SerializeObject(shotMessage));
+            }
+            // 自分が死んだ
+            if(joinedPlayers[id.ToString()].GetComponent<Player>().dead){
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
                 SceneManager.LoadSceneAsync("Gameover");
-                Dictionary<String, String> message = new Dictionary<string, string>()
+                Dictionary<String, String> deadMessage = new Dictionary<string, string>()
                 {
                     {"method", "dead"}, 
                     {"id", id.ToString()},
                 };
-                ws.SendText(JsonConvert.SerializeObject(message));
+                ws.SendText(JsonConvert.SerializeObject(deadMessage));
             }
         }
     }

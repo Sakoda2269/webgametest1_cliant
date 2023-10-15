@@ -6,12 +6,14 @@ using UnityEngine.UI;
 using System;
 using Newtonsoft.Json;
 
-public class ball : MonoBehaviour
+public class Player : MonoBehaviour
 {
 
     public float _speed = 1f;
     public float sensitiveRotate = 3.0f;
     public bool dead;
+    public int maxHealth = 100;
+    public int health = 100;
     Rigidbody rb;
     public GameObject weapon;
     
@@ -19,6 +21,7 @@ public class ball : MonoBehaviour
     void Start()
     {
         dead = false;
+        health = maxHealth;
         rb = this.GetComponent<Rigidbody>();
     }
 
@@ -61,6 +64,13 @@ public class ball : MonoBehaviour
         else
         {
             rb.velocity = new Vector3(0, 0, 0);
+        }
+    }
+
+    public void Damage(int damage){
+        health -= damage;
+        if(health <= 0){
+            dead = true;
         }
     }
 

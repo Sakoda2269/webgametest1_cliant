@@ -43,7 +43,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 420e0328a595dd94691fb341ef20ef2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cooldown: 20
+  maxCooldown: 30
+  cooldown: 0
   damage: 1
   bullet: {fileID: 7273136471367259028, guid: 2d74bc8d7a89ee243a7b96d3bd9e95f2, type: 3}
   gunName: rifle1
+  maxMagazine: 30
+  magazine: 17
+  maxRelodeTime: 1000
+  reloadTime: 0
+  reloading: 0

@@ -31,7 +31,6 @@ public abstract class Weapon : MonoBehaviour
         }
         if(reloadTime > 0){
             reloadTime--;
-            Debug.Log(reloadTime);
         }
         else if(reloading)
         {
@@ -45,16 +44,17 @@ public abstract class Weapon : MonoBehaviour
             GunShotType(pos, rotate_y);
         }
     }
+    public abstract void enemyShot(Vector3 pos, float rotate_y);
     public abstract void GunShotType(Vector3 pos, float rotate_y);
 
     public bool CanShot(){
-        if(magazine <= 0)
+        if(magazine <= 0 && !reloading)
         {
             reloading = true;
             reloadTime = maxRelodeTime;
             return false;
         }
-        return cooldown <= 0;
+        return cooldown <= 0 && !reloading;
     }
         
 }

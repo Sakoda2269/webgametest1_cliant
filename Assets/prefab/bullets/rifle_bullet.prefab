@@ -104,8 +104,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5225269281316957330}
-  - component: {fileID: -9200718314067802506}
   - component: {fileID: 1384809553166174099}
+  - component: {fileID: 3379575499350279911}
   m_Layer: 0
   m_Name: rifle_bullet
   m_TagString: Untagged
@@ -129,20 +129,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-9200718314067802506
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7273136471367259028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7980394b6dd2be94787714daddac92ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 50
-  shoter: {fileID: 0}
 --- !u!54 &1384809553166174099
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -159,6 +145,21 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &3379575499350279911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7273136471367259028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12bdb4f3689c60647b5133e667b5875f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 30
+  shoter: {fileID: 0}
+  damage: 5
 --- !u!1 &8707382601859317635
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,18 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class bullet : MonoBehaviour
+public abstract class Bullet : MonoBehaviour
 {
-    private Vector3 forward;
-    private Rigidbody rb;
+    protected Vector3 forward;
+    protected Rigidbody rb;
     public float speed = 30.0f;
     public GameObject shoter;
+    public int damage = 5;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = this.GetComponent<Rigidbody>();
         forward = this.transform.forward;
+        init();
     }
 
     // Update is called once per frame
@@ -23,7 +25,9 @@ public class bullet : MonoBehaviour
         rb.velocity = forward * speed;
     }
 
-    private void OnCollisionEnter(Collision other) {
+    protected abstract void init();
+
+    void OnCollisionEnter(Collision other) {
         if(other.gameObject.tag == "wall")
         {
             Destroy(this.gameObject);
@@ -32,7 +36,8 @@ public class bullet : MonoBehaviour
         {
             if(other.gameObject != shoter)
             {
-                other.gameObject.GetComponent<ball>().dead = true;
+                // other.gameObject.GetComponent<ball>().dead = true;
+                other.gameObject.GetComponent<Player>().Damage(damage);
                 Destroy(this.gameObject);
             }
             
